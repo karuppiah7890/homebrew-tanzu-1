@@ -179,7 +179,8 @@ rm -rf "${XDG_DATA_HOME}/tanzu-cli" \
   ${HOME}/.config/tanzu/tkg/bom \
   ${HOME}/.config/tanzu/tkg/providers \
   ${HOME}/.config/tanzu/tkg/.tanzu.lock \
-  ${HOME}/.config/tanzu/tkg/compatibility/tkg-compatibility.yaml
+  ${HOME}/.config/tanzu/tkg/compatibility/tkg-compatibility.yaml \
+  ${HOME}/.tanzu
 
 echo "Cleanup complete!"
 echo
