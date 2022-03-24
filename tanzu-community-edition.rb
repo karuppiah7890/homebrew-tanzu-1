@@ -94,6 +94,17 @@ case "${BUILD_OS}" in
 esac
 echo "${XDG_DATA_HOME}"
 
+# if plugin cache pre-exists, remove it so new plugins are detected
+TANZU_PLUGIN_CACHE="${HOME}/.cache/tanzu/catalog.yaml"
+if [[ -n "${TANZU_PLUGIN_CACHE}" ]]; then
+  echo "Removing old plugin cache from ${TANZU_PLUGIN_CACHE}"
+  rm -f "${TANZU_PLUGIN_CACHE}" > /dev/null
+fi
+
+# copy the uninstall script to tanzu-cli directory
+mkdir -p "${XDG_DATA_HOME}/tce"
+install "${MY_DIR}/uninstall.sh" "${XDG_DATA_HOME}/tce"
+
 # install all plugins present in the bundle
 mkdir -p "${XDG_CONFIG_HOME}/tanzu-plugins"
 
@@ -111,17 +122,6 @@ tanzu plugin install secret
 tanzu plugin install conformance
 tanzu plugin install diagnostics
 tanzu plugin install unmanaged-cluster
-
-# copy the uninstall script to tanzu-cli directory
-mkdir -p "${XDG_DATA_HOME}/tce"
-install "${MY_DIR}/uninstall.sh" "${XDG_DATA_HOME}/tce"
-
-# if plugin cache pre-exists, remove it so new plugins are detected
-TANZU_PLUGIN_CACHE="${HOME}/.cache/tanzu/catalog.yaml"
-if [[ -n "${TANZU_PLUGIN_CACHE}" ]]; then
-  echo "Removing old plugin cache from ${TANZU_PLUGIN_CACHE}"
-  rm -f "${TANZU_PLUGIN_CACHE}" > /dev/null
-fi
 
 # Make a backup of Kubernetes configs
 set +o errexit
