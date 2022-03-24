@@ -4,20 +4,23 @@
 class TanzuCommunityEdition < Formula
   desc "Tanzu Community Edition"
   homepage "https://github.com/vmware-tanzu/community-edition"
-  version "v0.10.0"
+  version "v0.11.0-rc.2"
   head "https://github.com/vmware-tanzu/community-edition.git"
 
   if OS.mac?
     url "https://github.com/vmware-tanzu/community-edition/releases/download/#{version}/tce-darwin-amd64-#{version}.tar.gz"
-    sha256 "1c40861e693ac99aa787d6de3ef6e07b7134446d9987a8ffea1155cb1c945d90"
+    sha256 "0c7885c5b073169fc02994bb8648c27dab6bbf54ca3aac37aea4ecbdb6b34cad"
   elsif OS.linux?
     url "https://github.com/vmware-tanzu/community-edition/releases/download/#{version}/tce-linux-amd64-#{version}.tar.gz"
-    sha256 "7b246bb22f2fabd1cd2ea07ce533f10a5c5955670827e734d8c549595d106e6f"
+    sha256 "be4fcae0677365f8658fbd735fbaa721d0eaf0557465084d186405b3608345a6"
   end
 
   def install
-    bin.install "bin/tanzu"
-    libexec.install Dir["bin/tanzu-plugin-*"]
+    bin.install "tanzu"
+    # TODO: copy default-local directory contents to libexec, maybe under a specific directory
+    # like "tanzu-plugin"
+    # which will later be moved to tanzu-plugins directory
+    libexec.install Dir["default-local"]
 
     File.write("configure-tce.sh", brew_installer_script)
     File.chmod(0755, "configure-tce.sh")
@@ -78,9 +81,11 @@ BUILD_OS=$(uname 2>/dev/null || echo Unknown)
 case "${BUILD_OS}" in
   Linux)
     XDG_DATA_HOME="${HOME}/.local/share"
+    XDG_CONFIG_HOME="${HOME}/.config"
     ;;
   Darwin)
     XDG_DATA_HOME="${HOME}/Library/Application Support"
+    XDG_CONFIG_HOME="${HOME}/.config"
     ;;
   *)
     echo "${BUILD_OS} is unsupported"
@@ -90,10 +95,22 @@ esac
 echo "${XDG_DATA_HOME}"
 
 # install all plugins present in the bundle
-mkdir -p "${XDG_DATA_HOME}/tanzu-cli"
-for plugin in "${MY_DIR}"/tanzu-plugin*; do
-  install "${plugin}" "${XDG_DATA_HOME}/tanzu-cli"
-done
+mkdir -p "${XDG_CONFIG_HOME}/tanzu-plugins"
+
+cp -r "${MY_DIR}/default-local/." "${XDG_CONFIG_HOME}/tanzu-plugins"
+# install plugins
+tanzu plugin install builder
+tanzu plugin install codegen
+tanzu plugin install cluster
+tanzu plugin install kubernetes-release
+tanzu plugin install login
+tanzu plugin install management-cluster
+tanzu plugin install package
+tanzu plugin install pinniped-auth
+tanzu plugin install secret
+tanzu plugin install conformance
+tanzu plugin install diagnostics
+tanzu plugin install unmanaged-cluster
 
 # copy the uninstall script to tanzu-cli directory
 mkdir -p "${XDG_DATA_HOME}/tce"
@@ -112,17 +129,15 @@ echo "Making a backup of your Kubernetes config files into /tmp"
 tar cf /tmp/`date "+%Y%m%d%H%M"`-kubernetes-configs.tar ~/.kube ~/.kube-tkg ~/.tanzu ~/.config/tanzu 2>/dev/null
 set -o errexit
 
-# explicit init of tanzu cli and add Tanzu Community Edition repo
-TANZU_CLI_NO_INIT=true tanzu init
-#TCE_REPO="$(tanzu plugin repo list | grep tce)"
-# if [[ -z "${TCE_REPO}"  ]]; then
-#   tanzu plugin repo add --name tce --gcp-bucket-name tce-cli-plugins --gcp-root-path artifacts
-# fi
+TCE_REPO="$(tanzu plugin repo list | grep tce)"
+if [[ -z "${TCE_REPO}"  ]]; then
+  tanzu plugin repo add --name tce --gcp-bucket-name tce-tanzu-cli-plugins --gcp-root-path artifacts
+fi
 
-# TCE_REPO="$(tanzu plugin repo list | grep core-admin)"
-# if [[ -z "${TCE_REPO}"  ]]; then
-#   tanzu plugin repo add --name core-admin --gcp-bucket-name tce-tanzu-cli-framework-admin --gcp-root-path artifacts-admin
-# fi
+TCE_REPO="$(tanzu plugin repo list | grep core-admin)"
+if [[ -z "${TCE_REPO}"  ]]; then
+  tanzu plugin repo add --name core-admin --gcp-bucket-name tce-tanzu-cli-framework-admin --gcp-root-path artifacts-admin
+fi
 
 echo "Installation complete!"
 EOF
