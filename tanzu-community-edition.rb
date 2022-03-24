@@ -17,6 +17,7 @@ class TanzuCommunityEdition < Formula
 
   def install
     bin.install "tanzu"
+    # TODO: find exact directory name with pattern, and not hard code the name.
     # TODO: copy default-local directory contents to libexec, maybe under a specific directory
     # like "tanzu-plugin"
     # which will later be moved to tanzu-plugins directory
