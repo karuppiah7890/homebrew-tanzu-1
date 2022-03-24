@@ -4,14 +4,17 @@
 class TanzuCommunityEdition < Formula
   desc "Tanzu Community Edition"
   homepage "https://github.com/vmware-tanzu/community-edition"
+  # TODO: Update the version to "v0.11.0" when it releases
   version "v0.11.0-rc.2"
   head "https://github.com/vmware-tanzu/community-edition.git"
 
   if OS.mac?
     url "https://github.com/vmware-tanzu/community-edition/releases/download/#{version}/tce-darwin-amd64-#{version}.tar.gz"
+    # TODO: Update the SHA to Mac OS "v0.11.0" tar ball SHA sum when it releases
     sha256 "0c7885c5b073169fc02994bb8648c27dab6bbf54ca3aac37aea4ecbdb6b34cad"
   elsif OS.linux?
     url "https://github.com/vmware-tanzu/community-edition/releases/download/#{version}/tce-linux-amd64-#{version}.tar.gz"
+    # TODO: Update the SHA to Linux OS "v0.11.0" tar ball SHA sum when it releases
     sha256 "be4fcae0677365f8658fbd735fbaa721d0eaf0557465084d186405b3608345a6"
   end
 
